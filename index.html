@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Triple Triad — FF8</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <h1>TRIPLE TRIAD</h1>
+  <p class="subtitle">Final Fantasy VIII &middot; 2-Player Hotseat</p>
+
+  <!-- ============ SETUP / DECK BUILDER ============ -->
+  <section id="setup" class="setup">
+    <div class="toggles">
+      <label><input type="checkbox" id="ruleOpen" checked /> Open (show both hands)</label>
+      <label><input type="checkbox" id="ruleSame" /> Same</label>
+      <label><input type="checkbox" id="rulePlus" /> Plus</label>
+      <label><input type="checkbox" id="ruleSameWall" /> Same Wall</label>
+      <label><input type="checkbox" id="ruleElem" /> Elemental</label>
+    </div>
+
+    <div class="setup-config">
+      <label class="cfg-first">Who goes first:
+        <select id="firstPlayer">
+          <option value="random">🎲 Coin toss</option>
+          <option value="1">Player 1 (Blue)</option>
+          <option value="2">Player 2 (Red)</option>
+        </select>
+      </label>
+
+      <div id="tileConfig" class="tile-config hidden">
+        <div class="tile-config-head">
+          <span class="tile-config-title">Element tiles &mdash; click a cell to cycle</span>
+          <button id="tileRandomBtn" type="button">🎲 Random tiles</button>
+          <button id="tileClearBtn" type="button">Clear tiles</button>
+        </div>
+        <div id="tileGrid" class="tile-grid"></div>
+      </div>
+    </div>
+
+    <h2>Build decks &mdash; <span id="pickingLabel">Player 1 (Blue)</span>
+      <span class="pick-status" id="pickCount">0 / 5 chosen</span>
+    </h2>
+
+    <div class="filter-row">
+      <label>Level:
+        <select id="levelFilter">
+          <option value="all">All</option>
+          <option value="1">1 · Monster</option>
+          <option value="2">2 · Monster</option>
+          <option value="3">3 · Monster</option>
+          <option value="4">4 · Monster</option>
+          <option value="5">5 · Monster</option>
+          <option value="6">6 · Boss</option>
+          <option value="7">7 · Boss</option>
+          <option value="8">8 · GF</option>
+          <option value="9">9 · GF</option>
+          <option value="10">10 · Character</option>
+        </select>
+      </label>
+      <input type="text" id="searchBox" placeholder="Search card name…" />
+      <button id="randomOneBtn">🎲 Random 5 (this player)</button>
+      <button id="clearBtn">Clear</button>
+      <button id="switchBtn">Next: Player 2 ►</button>
+      <button id="randomBothBtn">🎲 Random decks for both</button>
+    </div>
+
+    <div class="card-grid" id="cardGrid"></div>
+
+    <div style="text-align:center; margin-top:18px;">
+      <button class="primary" id="startBtn" disabled>⚔️ Start Battle</button>
+    </div>
+  </section>
+
+  <!-- ============ GAME BOARD ============ -->
+  <section id="game" class="game hidden">
+    <div class="hand p1" id="hand1">
+      <h2>Player 1</h2>
+      <div class="cards"></div>
+    </div>
+
+    <div class="board-wrap">
+      <div class="score" id="score">
+        <span class="p1">5</span>
+        <span class="p2">5</span>
+      </div>
+      <div class="banner" id="banner"></div>
+      <div class="board" id="board"></div>
+      <button id="quitBtn" onclick="backToSetup()">↩ New decks</button>
+
+      <div id="advisor" class="advisor">
+        <div class="advisor-head">
+          <label><input type="checkbox" id="advisorToggle" checked /> 🔮 Move Advisor</label>
+          <span id="advisorStatus" class="advisor-status"></span>
+        </div>
+        <ol id="advisorList" class="advisor-list"></ol>
+        <div class="advisor-hint">Press <kbd>1</kbd>–<kbd>5</kbd> to instantly play a ranked move</div>
+      </div>
+    </div>
+
+    <div class="hand p2" id="hand2">
+      <h2>Player 2</h2>
+      <div class="cards"></div>
+    </div>
+  </section>
+
+  <!-- ============ RESULT MODAL ============ -->
+  <div id="modal" class="modal hidden">
+    <div class="box">
+      <h2 id="resultTitle">Player 1 Wins!</h2>
+      <p id="resultMsg"></p>
+      <button class="primary" id="rematchBtn">Rematch (same decks)</button>
+      <button id="playAgainBtn">New decks</button>
+    </div>
+  </div>
+
+  <script src="cards.js"></script>
+  <script src="art/sprites-beasts.js"></script>
+  <script src="art/sprites-nature.js"></script>
+  <script src="art/sprites-constructs.js"></script>
+  <script src="art/sprites-dark.js"></script>
+  <script src="art/palette.js"></script>
+  <script src="art/archetypes.js"></script>
+  <script src="art/render.js"></script>
+  <script src="game.js"></script>
+</body>
+</html>
