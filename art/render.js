@@ -2,8 +2,10 @@
  * Loaded after the sprite grids, palette.js and archetypes.js (see index.html).
  * Pure string work, no DOM APIs, so it is safe under test.js's vm sandbox.
  */
-const SPRITES = Object.assign({}, SPRITES_BEASTS, SPRITES_NATURE,
-                                 SPRITES_CONSTRUCTS, SPRITES_DARK);
+/* SPRITES_DETAILED is merged last so a hand-colored portrait overrides any
+ * same-named tier-palette sprite. */
+const SPRITES = Object.assign({}, SPRITES_BEASTS, SPRITES_NATURE, SPRITES_CONSTRUCTS,
+                                 SPRITES_DARK, SPRITES_DETAILED);
 
 const FRECKLES = 3;   // accent cells added per card (see freckle() below)
 
@@ -52,63 +54,78 @@ function shiftHue(hex, deg) {
 /* Promote a few already-opaque body cells to the accent color. Restricted to the
  * mid/light shades so the outline stays intact and no accent pixel can ever float
  * outside the silhouette — which is what makes stamp-style overlays look broken. */
-function freckle(rows, h) {
-  const cells = rows.map((r) => r.split(""));
+function freckle(cells, h) {
   const spots = [];
   for (let y = 0; y < 16; y++) {
     for (let x = 0; x < 16; x++) {
       if (cells[y][x] === "3" || cells[y][x] === "4") spots.push([x, y]);
     }
   }
-  if (!spots.length) return cells;
+  if (!spots.length) return;
   const step = 7 + (h % 11);            // stride spreads the picks apart
   for (let i = 0; i < FRECKLES; i++) {
     const [x, y] = spots[((h >>> 9) + i * step) % spots.length];
     cells[y][x] = "5";
   }
-  return cells;
 }
 
-function buildSprite(card) {
-  const grid = SPRITES[archetypeOf(card)];
-  const h = spriteHash(card.name);
+/* A 16x16 grid recolored from the card's level tier. Chars 1-5 are shade roles, and the
+ * per-card hash supplies the mirror, hue nudge, accent and freckling. */
+function tierCells(grid, card, hash, archetype) {
   const tier = tierPalette(card.level);
-  const hue = ((h >>> 2) % 15) - 7;     // +/-7 degrees, so cards in a tier differ
-
+  const hue = ((hash >>> 2) % 15) - 7;   // +/-7 degrees, so cards in a tier differ
   const fill = {
     1: SPRITE_OUTLINE,
     2: shiftHue(tier.dark, hue),
     3: shiftHue(tier.mid, hue),
     4: shiftHue(tier.light, hue),
-    5: SPRITE_ACCENTS[(h >>> 6) % SPRITE_ACCENTS.length],
+    5: SPRITE_ACCENTS[(hash >>> 6) % SPRITE_ACCENTS.length],
   };
+  const rows = (hash & 1) ? grid.map((r) => r.split("").reverse().join("")) : grid;
+  const cells = rows.map((r) => r.split(""));
+  if (isSharedArchetype(archetype)) freckle(cells, hash);
+  return { cells, fill, w: 16, h: 16 };
+}
 
-  const rows = (h & 1) ? grid.map((r) => r.split("").reverse().join("")) : grid;
-  const cells = freckle(rows, h);
-
-  // Run-length merge each row, accumulating one path per color rather than one
-  // rect per pixel: ~55 runs collapse into <=5 nodes and a much shorter URI.
+/* Run-length merge each row, accumulating one path per color rather than one rect per
+ * pixel, then serialize. Keeps the node count and the URI short at any grid size. */
+function spriteSVG(cells, fill, w, h) {
   const paths = {};
-  for (let y = 0; y < 16; y++) {
+  for (let y = 0; y < h; y++) {
     let x = 0;
-    while (x < 16) {
+    while (x < w) {
       const c = cells[y][x];
       if (c === ".") { x++; continue; }
-      let w = 1;
-      while (x + w < 16 && cells[y][x + w] === c) w++;
-      paths[c] = (paths[c] || "") + `M${x} ${y}h${w}v1h-${w}z`;
-      x += w;
+      let run = 1;
+      while (x + run < w && cells[y][x + run] === c) run++;
+      paths[c] = (paths[c] || "") + `M${x} ${y}h${run}v1h-${run}z`;
+      x += run;
     }
   }
-
   const body = Object.keys(paths).sort()
     .map((c) => `<path d="${paths[c]}" fill="${fill[c]}"/>`).join("");
-  const svg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16"` +
+  const svg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${w} ${h}"` +
               ` shape-rendering="crispEdges">${body}</svg>`;
 
   // encodeURIComponent leaves no quote, paren or whitespace characters behind, so an
   // unquoted url() is safe to drop straight into an HTML style="..." attribute.
   return `url(data:image/svg+xml,${encodeURIComponent(svg)})`;
+}
+
+function buildSprite(card) {
+  const archetype = archetypeOf(card);
+  const sprite = SPRITES[archetype];
+  const hash = spriteHash(card.name);
+
+  /* Two sprite formats. An ARRAY of rows is a 16x16 silhouette tinted by level tier.
+   * An OBJECT carries its own palette and dimensions -- the hand-colored portraits,
+   * which take no mirror, hue shift or freckling: every pixel is deliberate. */
+  const { cells, fill, w, h } = Array.isArray(sprite)
+    ? tierCells(sprite, card, hash, archetype)
+    : { cells: sprite.rows.map((r) => r.split("")), fill: sprite.palette,
+        w: sprite.w, h: sprite.h };
+
+  return spriteSVG(cells, fill, w, h);
 }
 
 /* renderSetup/renderHand/renderBoard rebuild their DOM on every state change, so

@@ -31,9 +31,21 @@ function cardEl(card, owner) {
   const el = document.createElement("div");
   el.className = "card" + (owner ? " owner-" + (owner === 1 ? "blue" : "red") : "");
   const show = (n) => (n === 10 ? "A" : n);
+  // Art must never be able to take the board down with it. If the sprite layer fails
+  // (a half-cached reload leaving a stale art/*.js, say), the card still renders with
+  // its name and numbers instead of throwing and aborting the whole render loop.
+  let artStyle = "";
+  try {
+    artStyle = ` style="background-image:${spriteURI(card)}"`;
+  } catch (err) {
+    if (!cardEl.artFailed) {
+      cardEl.artFailed = true;
+      console.error("Card art unavailable (try a hard reload: Cmd/Ctrl+Shift+R)", err);
+    }
+  }
   el.innerHTML = `
     <div class="name">${card.name}</div>
-    <div class="art" style="background-image:${spriteURI(card)}"></div>
+    <div class="art"${artStyle}></div>
     <div class="num t">${show(card.top)}</div>
     <div class="num l">${show(card.left)}</div>
     <div class="num r">${show(card.right)}</div>

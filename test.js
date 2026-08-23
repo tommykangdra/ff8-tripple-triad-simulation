@@ -24,7 +24,7 @@ vm.createContext(sandbox);
 for (const f of [
   "cards.js",
   "art/sprites-beasts.js", "art/sprites-nature.js",
-  "art/sprites-constructs.js", "art/sprites-dark.js",
+  "art/sprites-constructs.js", "art/sprites-dark.js", "art/sprites-detailed.js",
   "art/palette.js", "art/archetypes.js", "art/render.js",
 ]) {
   vm.runInContext(fs.readFileSync(__dirname + "/" + f, "utf8"), sandbox);

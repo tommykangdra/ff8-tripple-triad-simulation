@@ -20,9 +20,12 @@ Level 1 **Monster** cards you can see right away in the deck builder.
 - **Capture engine** — basic higher-number captures plus Same/Plus combo cascades.
 - **Move Advisor** — after every move it simulates the rest of the game and tells the player to
   move which **card + cell gives the best win %** (see below).
-- **Pixel-art card faces** — a hand-drawn 16x16 sprite per card, colored by level tier and
-  varied per card, generated at runtime as inline SVG. Plus blue/red owner glow, corner
-  numbers and element badges. Still no image files, no build step, works fully offline.
+- **Pixel-art card faces** — every card has a hand-drawn sprite, generated at runtime as
+  inline SVG. The 99 creature cards share 24 archetype silhouettes tinted by level tier and
+  are told apart by a per-card hue shift, mirror and accent. The 11 Level 10 characters are
+  full-color 28x28 portraits, each with its own palette — a second sprite format the renderer
+  detects automatically. Plus blue/red owner glow, corner numbers and element badges. Still
+  no image files, no build step, works fully offline.
 
 ## How to play
 
@@ -125,7 +128,8 @@ Expected output — all lines `PASS`.
 | `styles.css` | Card chrome, board layout, animations |
 | `cards.js` | The 110-card database (`CARDS`) + element icons |
 | `game.js` | State, rules engine, turn flow, rendering |
-| `art/sprites-*.js` | 24 hand-drawn 16x16 sprite grids, grouped by family |
+| `art/sprites-*.js` | 24 hand-drawn 16x16 creature archetypes, tinted by level tier |
+| `art/sprites-detailed.js` | The 11 Level 10 characters as 28x28 full-color portraits |
 | `art/palette.js` | Per-level tier palettes, plus the shared outline and accent colors |
 | `art/archetypes.js` | Card name to sprite archetype, with a per-level fallback |
 | `art/render.js` | Grid to memoized data-URI SVG; owns the per-card variation |

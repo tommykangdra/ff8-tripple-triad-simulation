@@ -164,9 +164,10 @@ button:disabled { opacity: .4; cursor: not-allowed; box-shadow: none; }
   position: absolute;
   inset: 0;
   background-repeat: no-repeat;
-  /* 16px sprite grid at an exact 5x scale, so pixels stay crisp */
-  background-size: 80px 80px;
-  background-position: center bottom 12px;
+  /* 16px sprite grid at 3.5x (exactly 7x on a 2x display, so pixels stay crisp).
+     Centered in the band below the name strip, clear of all four numbers. */
+  background-size: 56px 56px;
+  background-position: center bottom 23px;
   image-rendering: pixelated;
   filter: drop-shadow(0 2px 4px rgba(0,0,0,.6));
   opacity: .95;

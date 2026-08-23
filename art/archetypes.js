@@ -27,9 +27,19 @@ const ARCHETYPE_GROUPS = {
   demon:     "Creeps|Tri-Face|Vysage|Imp|Abadon|Ultima Weapon|Ifrit|Diablos|Pandemona",
   soldier:   "Tonberry|Tonberry King|Gilgamesh|Odin",
   celestial: "Shiva|Siren|Eden",
-  portrait:  "Wedge, Biggs|Fujin, Raijin|Shumi Tribe|Ward Zabac|Kiros Seagill|Laguna Loire|" +
-             "Selphie Tilmitt|Quistis Trepe|Irvine Kinneas|Zell Dincht|Rinoa Heartilly|" +
-             "Edea Kramer|Seifer Almasy|Squall Leonhart",
+  portrait:  "Wedge, Biggs|Fujin, Raijin|Shumi Tribe",
+  // Level 10 characters -- one sprite each, see art/sprites-detailed.js
+  squall:    "Squall Leonhart",
+  rinoa:     "Rinoa Heartilly",
+  zell:      "Zell Dincht",
+  selphie:   "Selphie Tilmitt",
+  quistis:   "Quistis Trepe",
+  irvine:    "Irvine Kinneas",
+  laguna:    "Laguna Loire",
+  kiros:     "Kiros Seagill",
+  ward:      "Ward Zabac",
+  edea:      "Edea Kramer",
+  seifer:    "Seifer Almasy",
 };
 
 const ARCHETYPE_OF = {};
@@ -43,6 +53,16 @@ const LEVEL_ARCHETYPE = [
   "beast", "beast", "insect", "beast", "beast", "giant",
   "demon", "mech", "celestial", "dragon", "portrait",
 ];
+
+/* How many cards share each archetype. render.js uses this to skip the per-card accent
+ * freckling on sprites belonging to a single card (the Level 10 characters), where it
+ * would only add noise to a face. */
+const ARCHETYPE_COUNT = {};
+for (const a of Object.values(ARCHETYPE_OF)) ARCHETYPE_COUNT[a] = (ARCHETYPE_COUNT[a] || 0) + 1;
+
+function isSharedArchetype(a) {
+  return (ARCHETYPE_COUNT[a] || 0) > 1;
+}
 
 function archetypeOf(card) {
   return ARCHETYPE_OF[card.name] || LEVEL_ARCHETYPE[Math.min(10, Math.max(1, card.level || 1))];
